@@ -1,0 +1,85 @@
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+
+/*Put your SSID & Password*/
+const char* ssid = "";  // Enter SSID here
+const char* password = "";  //Enter Password here
+
+ESP8266WebServer server(80);
+
+uint8_t LEDpin = D4;
+uint8_t OUTSIDEpin = D7;
+uint8_t GARAGEpin = D6;
+
+void setup() {
+  Serial.begin(115200);
+  delay(100);
+  
+  pinMode(LEDpin, OUTPUT);
+  pinMode(OUTSIDEpin, OUTPUT);
+  pinMode(GARAGEpin, OUTPUT);
+
+  digitalWrite(LEDpin, HIGH);
+  digitalWrite(OUTSIDEpin, HIGH);
+  digitalWrite(GARAGEpin, HIGH);
+
+  Serial.println("Connecting to ");
+  Serial.println(ssid);
+
+  //connect to your local wi-fi network
+  WiFi.begin(ssid, password);
+
+  //check wi-fi is connected to wi-fi network
+  while (WiFi.status() != WL_CONNECTED) {
+  delay(1000);
+  Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected..!");
+  Serial.print("Got IP: ");  Serial.println(WiFi.localIP());
+
+  server.on("/", handle_OnConnect);
+  server.on("/outside-gate", handle_outside_gate);
+  server.on("/garage-gate", handle_garage_gate);
+  server.onNotFound(handle_NotFound);
+
+  server.begin();
+  Serial.println("HTTP server started");
+}
+void loop() {
+  server.handleClient();
+}
+
+void handle_OnConnect() {
+  digitalWrite(LEDpin, LOW);
+  delay(1000);
+  digitalWrite(LEDpin, HIGH);
+  delay(1000);
+  
+  Serial.println("GPIO7 Status: OFF | GPIO6 Status: OFF");
+  server.send(200, "text/html", SendHTML());
+}
+
+void handle_outside_gate() {
+  digitalWrite(OUTSIDEpin, LOW);
+  delay(1000);
+  Serial.println("GPIO7 Status: ON");
+  digitalWrite(OUTSIDEpin, HIGH);
+  server.send(200, "text/html", "OK"); 
+}
+
+void handle_garage_gate() {
+  digitalWrite(GARAGEpin, LOW);
+  delay(1000);
+  Serial.println("GPIO6 Status: OFF");
+  digitalWrite(GARAGEpin, HIGH);
+  server.send(200, "text/html", "OK"); 
+}
+
+void handle_NotFound(){
+  server.send(404, "text/plain", "Not found");
+}
+
+String SendHTML() {
+  return "ALIVE";
+}
