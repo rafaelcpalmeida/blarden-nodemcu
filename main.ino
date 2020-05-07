@@ -23,20 +23,7 @@ void setup() {
   digitalWrite(OUTSIDEpin, HIGH);
   digitalWrite(GARAGEpin, HIGH);
 
-  Serial.println("Connecting to ");
-  Serial.println(ssid);
-
-  //connect to your local wi-fi network
-  WiFi.begin(ssid, password);
-
-  //check wi-fi is connected to wi-fi network
-  while (WiFi.status() != WL_CONNECTED) {
-  delay(1000);
-  Serial.print(".");
-  }
-  Serial.println("");
-  Serial.println("WiFi connected..!");
-  Serial.print("Got IP: ");  Serial.println(WiFi.localIP());
+  connectWifi();
 
   server.on("/", handle_OnConnect);
   server.on("/outside-gate", handle_outside_gate);
@@ -46,18 +33,45 @@ void setup() {
   server.begin();
   Serial.println("HTTP server started");
 }
+
 void loop() {
   server.handleClient();
+  connectWifi();
+}
+
+void connectWifi() {
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("");
+    Serial.println("WiFi connected..!");
+    Serial.print("Got IP: ");  Serial.println(WiFi.localIP());
+    //delay(1000);
+    return;
+  }
+
+  Serial.println("Connecting to ");
+  Serial.println(ssid);
+
+  //connect to your local wi-fi network
+  WiFi.begin(ssid, password);
+
+  //check wi-fi is connected to wi-fi network
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.print(".");
+  }
+  
+  Serial.println("");
+  Serial.println("WiFi connected..!");
+  Serial.print("Got IP: ");  Serial.println(WiFi.localIP());
 }
 
 void handle_OnConnect() {
+  server.send(200, "text/html", "ALIVE");
+  
   digitalWrite(LEDpin, LOW);
   delay(1000);
   digitalWrite(LEDpin, HIGH);
   delay(1000);
-  
-  Serial.println("GPIO7 Status: OFF | GPIO6 Status: OFF");
-  server.send(200, "text/html", SendHTML());
 }
 
 void handle_outside_gate() {
@@ -78,8 +92,4 @@ void handle_garage_gate() {
 
 void handle_NotFound(){
   server.send(404, "text/plain", "Not found");
-}
-
-String SendHTML() {
-  return "ALIVE";
 }
