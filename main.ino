@@ -14,20 +14,18 @@ uint8_t GARAGEpin = D6;
 void setup() {
   Serial.begin(115200);
   delay(100);
-  
+
   pinMode(LEDpin, OUTPUT);
   pinMode(OUTSIDEpin, OUTPUT);
   pinMode(GARAGEpin, OUTPUT);
 
   digitalWrite(LEDpin, HIGH);
-  digitalWrite(OUTSIDEpin, HIGH);
-  digitalWrite(GARAGEpin, HIGH);
 
   connectWifi();
 
   server.on("/", handle_OnConnect);
-  server.on("/outside-gate", handle_outside_gate);
-  server.on("/garage-gate", handle_garage_gate);
+  server.on("/outside-gate/7w4hTAYZzFwJrmxsu7C63gfE7vkLfs", handle_outside_gate);
+  server.on("/garage-gate/7w4hTAYZzFwJrmxsu7C63gfE7vkLfs", handle_garage_gate);
   server.onNotFound(handle_NotFound);
 
   server.begin();
@@ -41,10 +39,6 @@ void loop() {
 
 void connectWifi() {
   if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("");
-    Serial.println("WiFi connected..!");
-    Serial.print("Got IP: ");  Serial.println(WiFi.localIP());
-    //delay(1000);
     return;
   }
 
@@ -59,7 +53,7 @@ void connectWifi() {
     delay(1000);
     Serial.print(".");
   }
-  
+
   Serial.println("");
   Serial.println("WiFi connected..!");
   Serial.print("Got IP: ");  Serial.println(WiFi.localIP());
@@ -67,7 +61,7 @@ void connectWifi() {
 
 void handle_OnConnect() {
   server.send(200, "text/html", "ALIVE");
-  
+
   digitalWrite(LEDpin, LOW);
   delay(1000);
   digitalWrite(LEDpin, HIGH);
@@ -75,21 +69,19 @@ void handle_OnConnect() {
 }
 
 void handle_outside_gate() {
-  digitalWrite(OUTSIDEpin, LOW);
-  delay(1000);
-  Serial.println("GPIO7 Status: ON");
   digitalWrite(OUTSIDEpin, HIGH);
-  server.send(200, "text/html", "OK"); 
+  delay(1000);
+  digitalWrite(OUTSIDEpin, LOW);
+  server.send(200, "text/html", "OK");
 }
 
 void handle_garage_gate() {
-  digitalWrite(GARAGEpin, LOW);
-  delay(1000);
-  Serial.println("GPIO6 Status: OFF");
   digitalWrite(GARAGEpin, HIGH);
-  server.send(200, "text/html", "OK"); 
+  delay(1000);
+  digitalWrite(GARAGEpin, LOW);
+  server.send(200, "text/html", "OK");
 }
 
-void handle_NotFound(){
+void handle_NotFound() {
   server.send(404, "text/plain", "Not found");
 }
