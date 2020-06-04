@@ -9,7 +9,7 @@ ESP8266WebServer server(80);
 
 uint8_t LEDpin = D4;
 uint8_t OUTSIDEpin = D7;
-uint8_t GARAGEpin = D6;
+uint8_t GARAGEpin = D8;
 
 void setup() {
   Serial.begin(115200);
@@ -20,12 +20,13 @@ void setup() {
   pinMode(GARAGEpin, OUTPUT);
 
   digitalWrite(LEDpin, HIGH);
+  digitalWrite(GARAGEpin, HIGH);
 
   connectWifi();
 
   server.on("/", handle_OnConnect);
-  server.on("/outside-gate/7w4hTAYZzFwJrmxsu7C63gfE7vkLfs", handle_outside_gate);
-  server.on("/garage-gate/7w4hTAYZzFwJrmxsu7C63gfE7vkLfs", handle_garage_gate);
+  server.on("/outside-gate/", handle_outside_gate);
+  server.on("/garage-gate/", handle_garage_gate);
   server.onNotFound(handle_NotFound);
 
   server.begin();
@@ -39,6 +40,10 @@ void loop() {
 
 void connectWifi() {
   if (WiFi.status() == WL_CONNECTED) {
+    //Serial.println("");
+    //Serial.println("WiFi connected..!");
+    //Serial.print("Got IP: ");  Serial.println(WiFi.localIP());
+    //delay(1000);
     return;
   }
 
@@ -76,9 +81,9 @@ void handle_outside_gate() {
 }
 
 void handle_garage_gate() {
-  digitalWrite(GARAGEpin, HIGH);
-  delay(1000);
   digitalWrite(GARAGEpin, LOW);
+  delay(1000);
+  digitalWrite(GARAGEpin, HIGH);
   server.send(200, "text/html", "OK");
 }
 
