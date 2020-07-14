@@ -12,6 +12,7 @@ uint8_t OUTSIDEpin = D7;
 uint8_t GARAGEpin = D8;
 
 void setup() {
+  WiFi.mode(WIFI_STA);
   Serial.begin(115200);
   delay(100);
 
